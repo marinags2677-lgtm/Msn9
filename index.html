@@ -2,262 +2,140 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Intersol Messenger</title>
+    <title>Intersol Messenger - Suite</title>
     <style>
-        /* TEMA AERO INTERSOL (Sin marcas registradas) */
-        body { 
-            background: #004b8d url('https://wallpaperaccess.com/full/2157335.jpg') no-repeat center center fixed; 
-            background-size: cover; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; 
-            display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; 
-        }
-
-        /* BARRA DE CARGA PROPIA */
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.95); z-index: 1000;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
-        .loader-bar { width: 200px; height: 12px; background: #eee; border: 1px solid #ccc; border-radius: 10px; overflow: hidden; margin-top: 20px; }
-        .progress { width: 0%; height: 100%; background: linear-gradient(90deg, #d83b01, #ff5722); transition: width 0.1s; }
-
-        /* VENTANA PRINCIPAL AERO */
-        .msn-main { 
-            width: 320px; height: 580px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 8px; display: flex; flex-direction: column; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4); position: relative; 
-        }
-
-        .header { 
-            background: rgba(255, 255, 255, 0.2); color: #1c3d5a; padding: 12px; font-weight: bold; font-size: 13px; 
-            border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center;
-        }
+        :root { --msn-blue: #0078d7; --msn-bg: #e5effa; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--msn-bg); display: flex; justify-content: center; align-items: center; height: 100vh; }
         
-        .user-card { padding: 15px; display: flex; align-items: center; gap: 12px; }
-        .avatar { width: 55px; height: 55px; background: #fff; border: 1px solid #999; border-radius: 5px; padding: 2px; cursor: pointer; object-fit: cover; }
+        .msn-window { width: 320px; height: 550px; background: white; border: 1px solid #a0b4cd; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .msn-header { background: linear-gradient(to bottom, #fcfdfe, #e5effa); padding: 15px; border-bottom: 1px solid #a0b4cd; }
         
-        .status-select { font-size: 11px; border: none; background: transparent; color: #555; cursor: pointer; outline: none; }
-        .music-info { font-size: 11px; color: #d83b01; font-style: italic; cursor: pointer; display: block; margin-top: 2px; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 45px; height: 45px; border: 2px solid white; box-shadow: 0 0 3px gray; background: #eee; }
+        .user-name { font-weight: bold; font-size: 14px; color: #333; }
+        .user-status { font-size: 12px; color: #666; }
 
-        .contact-list { flex-grow: 1; overflow-y: auto; padding: 10px; background: rgba(255, 255, 255, 0.8); margin: 5px; border-radius: 4px; }
-        .contact { display: flex; align-items: center; padding: 8px; cursor: pointer; border-radius: 4px; gap: 10px; }
-        .contact:hover { background: rgba(216, 59, 1, 0.1); }
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); }
-        .online { background: #31a24c; } .busy { background: #f02849; } .away { background: #f7b928; }
-
-        /* VENTANA DE CHAT */
-        #chat-window { 
-            display: none; position: absolute; top: 30px; left: 340px; width: 400px; height: 480px; 
-            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 10px; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.5); 
-        }
-        #chat-msgs { flex-grow: 1; background: white; margin: 10px; padding: 15px; overflow-y: auto; border: 1px solid #cedee9; border-radius: 4px; }
+        .contact-list { flex-grow: 1; overflow-y: auto; padding: 10px; background: white; }
         
-        .chat-tools { padding: 5px 15px; display: flex; gap: 15px; font-size: 20px; cursor: pointer; align-items: center; }
-        .chat-input-area { padding: 10px 15px; display: flex; gap: 8px; }
+        /* ESTILO DE GRUPOS */
+        .group-header { font-size: 11px; font-weight: bold; color: #555; padding: 10px 5px 5px 5px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
         
-        input[type="text"] { flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 3px; }
-        button { background: linear-gradient(#f9f9f9, #e1e1e1); border: 1px solid #aaa; padding: 5px 15px; cursor: pointer; border-radius: 3px; }
+        .contact-item { display: flex; align-items: center; padding: 5px; cursor: pointer; border-radius: 3px; position: relative; }
+        .contact-item:hover { background: #f0f7ff; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; border: 1px solid rgba(0,0,0,0.1); }
+        .online { background: #31a24c; }
+        .offline { background: #ccc; }
+        
+        /* ESTRELLA DE FAVORITOS */
+        .fav-star { margin-left: auto; color: #ccc; font-size: 16px; transition: 0.2s; cursor: pointer; padding: 0 5px; }
+        .fav-star.active { color: #ffb400; text-shadow: 0 0 2px rgba(0,0,0,0.2); }
+        .fav-star:hover { transform: scale(1.2); }
 
-        .hidden { display: none !important; }
-        .shake { animation: shake 0.2s 5; }
-        @keyframes shake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(5px,5px); } 50% { transform: translate(-5px,-5px); } 75% { transform: translate(5px,-5px); } }
+        .msn-footer { padding: 10px; background: #f9f9f9; border-top: 1px solid #ddd; text-align: center; }
+        .btn-mail { color: var(--msn-blue); text-decoration: none; font-size: 12px; font-weight: bold; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="loading-overlay">
-        <div style="font-size: 24px; font-weight: bold; color: #d83b01;">Intersol Messenger</div>
-        <div class="loader-bar"><div class="progress" id="p-bar"></div></div>
-        <p style="font-size: 11px; color: #666; margin-top: 10px;">Iniciando sesión segura...</p>
-    </div>
-
-    <div class="msn-main">
-        <div class="header">
-            <span>Intersol Messenger</span>
-            <div style="display:flex; gap:10px;">
-                <span onclick="location.href='hotmail.html'" style="cursor:pointer" title="Ir al Mail">✉</span>
-                <span onclick="toggleFullscreen()" style="cursor:pointer">⛶</span>
-            </div>
-        </div>
-        
-        <div class="user-card">
-            <input type="file" id="avatar-input" class="hidden" accept="image/*" onchange="subirAvatarPropio()">
-            <img id="my-avatar" class="avatar" src="https://via.placeholder.com/55" onclick="document.getElementById('avatar-input').click()">
-            <div>
-                <b id="my-name" style="color:#1c3d5a;">Cargando...</b><br>
-                <select id="my-status" class="status-select" onchange="cambiarEstado()">
-                    <option value="online">● Disponible</option>
-                    <option value="busy">● Ocupado</option>
-                    <option value="away">● Ausente</option>
-                </select>
-                <span class="music-info" id="my-music" onclick="ponerMusica()">🎵 Pon tu música...</span>
+    <div class="msn-window">
+        <div class="msn-header">
+            <div class="user-info">
+                <img src="https://ui-avatars.com/api/?name=User&background=0078d7&color=fff" class="avatar" id="my-avatar">
+                <div>
+                    <div class="user-name" id="my-name">Cargando...</div>
+                    <div class="user-status">Disponible ▾</div>
+                </div>
             </div>
         </div>
 
-        <div class="contact-list" id="users-list"></div>
-        <div style="padding:8px; text-align:center; font-size:9px; color:#777;">Intersol Network Service © 2026</div>
-    </div>
+        <div class="contact-list" id="contact-list">
+            <div id="group-favs" class="hidden">
+                <div class="group-header">FAVORITOS ⭐</div>
+                <div id="list-favs"></div>
+            </div>
 
-    <div id="chat-window">
-        <div class="header" id="chat-with-name">
-            <span>Chat</span>
-            <span onclick="cerrarChat()" style="cursor:pointer">✖</span>
-        </div>
-        <div id="chat-msgs"></div>
-        
-        <div class="chat-tools">
-            <span onclick="enviarZumbido()" title="Enviar Zumbido">🔔</span>
-            <span onclick="document.getElementById('chat-file').click()" title="Adjuntar Archivo">📎</span>
-            <input type="file" id="chat-file" class="hidden" onchange="enviarArchivo()">
-            <span onclick="insertarEmoji('😊')">😊</span>
+            <div class="group-header">AMIGOS (<span id="count-friends">0</span>)</div>
+            <div id="list-friends"></div>
         </div>
 
-        <div class="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Escribe un mensaje...">
-            <button onclick="enviarMensaje()">Enviar</button>
+        <div class="msn-footer">
+            <a href="hotmail.html" class="btn-mail">📧 Ir a Intersol Mail</a>
         </div>
     </div>
-
-    <audio id="snd-zumbido" src="https://www.myinstants.com/media/sounds/msn-nudge.mp3"></audio>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push, update } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAWMmRpC9chHuBMWbMCRFeEzhQjh1dJ0Uw",
-        databaseURL: "https://intersol-ce061-default-rtdb.firebaseio.com"
-    };
-
+    const firebaseConfig = { apiKey: "AIzaSyAWMmRpC9chHuBMWbMCRFeEzhQjh1dJ0Uw", databaseURL: "https://intersol-ce061-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+
     const session = JSON.parse(localStorage.getItem('intersol_user'));
-    const userPath = 'intersol/usuarios/' + (session?.email?.replace(/\./g, '_') || '');
+    if(!session) window.location.href = "hotmail.html"; // Redirigir al login si no hay sesión
 
-    // BARRA DE CARGA
-    let p = 0;
-    const interval = setInterval(() => {
-        p += 20; document.getElementById('p-bar').style.width = p + "%";
-        if(p >= 100) { clearInterval(interval); document.getElementById('loading-overlay').classList.add('hidden'); }
-    }, 150);
+    document.getElementById('my-name').innerText = session.email.split('@')[0];
+    document.getElementById('my-avatar').src = `https://ui-avatars.com/api/?name=${session.email}&background=0078d7&color=fff`;
 
-    let chatActivo = null;
-
-    if (!session) {
-        window.location.href = "hotmail.html";
-    } else {
-        document.getElementById('my-name').innerText = session.nombre;
+    // --- CARGAR CONTACTOS ---
+    onValue(ref(db, 'intersol/usuarios'), (snap) => {
+        const listFavs = document.getElementById('list-favs');
+        const listFriends = document.getElementById('list-friends');
+        const groupFavs = document.getElementById('group-favs');
         
-        // Sincronizar mis datos
-        onValue(ref(db, userPath), (s) => {
-            const val = s.val();
-            if(val) {
-                if(val.foto) document.getElementById('my-avatar').src = val.foto;
-                if(val.status) document.getElementById('my-status').value = val.status;
-                if(val.music) document.getElementById('my-music').innerText = "🎵 " + val.music;
+        listFavs.innerHTML = "";
+        listFriends.innerHTML = "";
+        
+        let friendsCount = 0;
+        let hasFavs = false;
+
+        snap.forEach(child => {
+            const user = child.val();
+            if(user.email === session.email) return; // No mostrarse a uno mismo
+
+            friendsCount++;
+            
+            // Ver si es favorito (basado en una lista en el perfil del usuario actual)
+            // Para simplicidad, guardamos los favoritos en una rama local del usuario
+            const isFav = session.favoritos && session.favoritos.includes(user.email);
+            if(isFav) hasFavs = true;
+
+            const item = document.createElement('div');
+            item.className = 'contact-item';
+            item.innerHTML = `
+                <div class="status-dot online"></div>
+                <div style="font-size: 13px;">${user.email.split('@')[0]}</div>
+                <div class="fav-star ${isFav ? 'active' : ''}" onclick="toggleFavorito('${user.email}')">★</div>
+            `;
+
+            if(isFav) {
+                listFavs.appendChild(item);
+            } else {
+                listFriends.appendChild(item);
             }
         });
 
-        // Lista de contactos
-        onValue(ref(db, 'intersol/usuarios'), (snap) => {
-            const cont = document.getElementById('users-list');
-            cont.innerHTML = "";
-            snap.forEach(u => {
-                const user = u.val();
-                if(user.email !== session.email) {
-                    const div = document.createElement('div');
-                    div.className = 'contact';
-                    div.innerHTML = `
-                        <div style="position:relative">
-                            <img src="${user.foto || 'https://via.placeholder.com/55'}" style="width:35px; height:35px; border-radius:4px; object-fit:cover;">
-                            <div class="status-dot ${user.status || 'online'}" style="position:absolute; bottom:-2px; right:-2px;"></div>
-                        </div>
-                        <div><b>${user.nombre}</b><br><small style="color:#666; font-size:10px;">${user.music || ''}</small></div>
-                    `;
-                    div.onclick = () => abrirChat(user);
-                    cont.appendChild(div);
-                }
-            });
-        });
-    }
+        document.getElementById('count-friends').innerText = friendsCount;
+        groupFavs.className = hasFavs ? "" : "hidden";
+    });
 
-    // --- FUNCIONES INTERSOL ---
-    window.subirAvatarPropio = () => {
-        const file = document.getElementById('avatar-input').files[0];
-        const reader = new FileReader();
-        reader.onload = (e) => update(ref(db, userPath), { foto: e.target.result });
-        reader.readAsDataURL(file);
+    // --- LÓGICA DE FAVORITOS ---
+    window.toggleFavorito = (email) => {
+        let favs = session.favoritos || [];
+        if(favs.includes(email)) {
+            favs = favs.filter(e => e !== email);
+        } else {
+            favs.push(email);
+        }
+        
+        // Actualizamos la sesión local
+        session.favoritos = favs;
+        localStorage.setItem('intersol_user', JSON.stringify(session));
+        
+        // Forzamos refresco visual
+        location.reload(); 
     };
-
-    window.cambiarEstado = () => update(ref(db, userPath), { status: document.getElementById('my-status').value });
-
-    window.ponerMusica = () => {
-        const m = prompt("¿Qué estás escuchando?");
-        if(m !== null) update(ref(db, userPath), { music: m });
-    };
-
-    window.abrirChat = (user) => {
-        chatActivo = user;
-        document.getElementById('chat-window').style.display = 'flex';
-        document.getElementById('chat-with-name').children[0].innerText = "Chat con " + user.nombre;
-        cargarChat();
-    };
-
-    window.enviarMensaje = () => {
-        const txt = document.getElementById('chat-input').value;
-        if(!txt || !chatActivo) return;
-        const chatID = [session.email, chatActivo.email].sort().join('_').replace(/\./g, '_');
-        push(ref(db, 'intersol/chats/' + chatID), { user: session.nombre, text: txt, type: 'text' });
-        document.getElementById('chat-input').value = "";
-    };
-
-    window.enviarZumbido = () => {
-        const chatID = [session.email, chatActivo.email].sort().join('_').replace(/\./g, '_');
-        push(ref(db, 'intersol/chats/' + chatID), { type: 'zumbido', user: session.nombre });
-    };
-
-    window.enviarArchivo = () => {
-        const file = document.getElementById('chat-file').files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const chatID = [session.email, chatActivo.email].sort().join('_').replace(/\./g, '_');
-            push(ref(db, 'intersol/chats/' + chatID), { 
-                user: session.nombre, 
-                fileName: file.name, 
-                fileData: e.target.result, 
-                type: 'file' 
-            });
-        };
-        reader.readAsDataURL(file);
-    };
-
-    function cargarChat() {
-        const chatID = [session.email, chatActivo.email].sort().join('_').replace(/\./g, '_');
-        onValue(ref(db, 'intersol/chats/' + chatID), (snap) => {
-            const box = document.getElementById('chat-msgs'); box.innerHTML = "";
-            snap.forEach(m => {
-                const msg = m.val();
-                if(msg.type === 'zumbido') {
-                    box.innerHTML += `<div style="color:red"><b>¡${msg.user} ha enviado un zumbido!</b></div>`;
-                    if(msg.user !== session.nombre) { 
-                        document.getElementById('snd-zumbido').play();
-                        document.getElementById('chat-window').classList.add('shake');
-                        setTimeout(() => document.getElementById('chat-window').classList.remove('shake'), 500);
-                    }
-                } else if(msg.type === 'file') {
-                    box.innerHTML += `<div><b>${msg.user}:</b> <a href="${msg.fileData}" download="${msg.fileName}">📎 Descargar ${msg.fileName}</a></div>`;
-                } else {
-                    box.innerHTML += `<div><b>${msg.user}:</b> ${msg.text}</div>`;
-                }
-            });
-            box.scrollTop = box.scrollHeight;
-        });
-    }
-
-    window.cerrarChat = () => document.getElementById('chat-window').style.display = 'none';
-    window.insertarEmoji = (e) => document.getElementById('chat-input').value += e;
-    window.toggleFullscreen = () => { if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); };
 </script>
 </body>
 </html>
